@@ -1,0 +1,253 @@
+// Example/default ACLs for unrestricted connections.
+{
+	// Declare static groups of users. Use autogroups for all users or users with a specific role.
+	// "groups": {
+	//    "group:example": ["alice@example.com", "bob@example.com"],
+	// },
+
+	// Define the tags which can be applied to devices and by which users.
+	// "tagOwners": {
+	//    "tag:example": ["autogroup:admin"],
+	// },
+
+	// Define access control lists for users, groups, autogroups, tags,
+	// Tailscale IP addresses, and subnet ranges.
+	//  "acls": [
+	//      // Allow all connections.
+	//      // Comment this section out if you want to define specific restrictions.
+	//      {
+	//          "action": "accept",
+	//          "src":    ["*"],
+	//          "dst":    ["*:*"],
+	//      },
+
+	//      // Allow users in "group:example" to access "tag:example", but only from
+	//      // devices that are running macOS and have enabled Tailscale client auto-updating.
+	//      // {"action": "accept", "src": ["group:example"], "dst": ["tag:example:*"], "srcPosture":["posture:autoUpdateMac"]},
+	//  ],
+	"hosts": {
+		"eve":                      "100.80.185.72",
+		"bob":                      "100.87.182.94",
+		"alice":                    "100.111.233.122",
+		"pixel-8a":                 "100.85.3.86",
+		"mama-thinkpad":            "100.84.204.118",
+		"mama-phone":               "100.110.134.55",
+		"mama-pc":                  "100.99.43.78",
+		"dqdo-pc":                  "100.106.99.54",
+		"mamito-phone":             "100.70.95.23",
+		"mamito-pc":                "100.79.94.89",
+		"dqdo-phone":               "100.84.105.70",
+		"janet-pc":                 "100.95.27.79",
+		"mamito-slimpad-3":         "100.89.132.8",
+		"mamito-phone-samsung-a57": "100.73.198.121",
+		"omarchy":                  "100.121.143.94",
+	},
+
+	"acls": [
+		{
+			"action": "accept",
+
+			"src": [
+				"eve",
+				"bob",
+				"alice",
+				"pixel-8a",
+				"omarchy",
+			],
+
+			"dst": ["*:*"],
+		},
+		{
+			"action": "accept",
+			"src":    ["mama-thinkpad", "mama-phone", "mama-pc"],
+			"dst":    ["mama-thinkpad:*", "mama-phone:*", "mama-pc:*"],
+		},
+		{
+			"action": "accept",
+			"src":    ["janet-pc"],
+			"dst":    ["janet-pc:*"],
+		},
+		{
+			"action": "accept",
+
+			"src": [
+				"mamito-phone",
+				"dqdo-pc",
+				"mamito-pc",
+				"dqdo-phone",
+				"mamito-slimpad-3",
+				"mamito-phone-samsung-a57",
+			],
+
+			"dst": [
+				"mamito-phone:*",
+				"dqdo-pc:*",
+				"mamito-pc:*",
+				"dqdo-phone:*",
+				"mamito-slimpad-3:*",
+				"mamito-phone-samsung-a57:*",
+			],
+		},
+		//      "eve",
+		//      "bob",
+		//      "alice",
+		//      "pixel-8a",
+		//      "omarchy",
+		//     ___ALL THESE GET ACCESS TO EVERYTHING___ including lnd, rtl, opencode
+
+		{
+			"action": "accept",
+			"src":    ["autogroup:member"],
+
+			"dst": [
+				"svc:btc-node:*",
+				"svc:immich:*",
+				"svc:mempool:*",
+				"svc:metabase:*",
+				"svc:nextcloud:*",
+				"svc:nostr:*",
+				"svc:search:*",
+				"svc:translate:*",
+			],
+		},
+		{
+			"action": "accept",
+			"src":    ["autogroup:member"],
+			"dst":    ["autogroup:internet:*"],
+		},
+	],
+
+	// Define postures that will be applied to all rules without any specific
+	// srcPosture definition.
+	// "defaultSrcPosture": [
+	//      "posture:anyMac",
+	// ],
+
+	// Define device posture rules requiring devices to meet
+	// certain criteria to access parts of your system.
+	// "postures": {
+	//      // Require devices running macOS, a stable Tailscale
+	//      // version and auto update enabled for Tailscale.
+	//  "posture:autoUpdateMac": [
+	//      "node:os == 'macos'",
+	//      "node:tsReleaseTrack == 'stable'",
+	//      "node:tsAutoUpdate",
+	//  ],
+	//      // Require devices running macOS and a stable
+	//      // Tailscale version.
+	//  "posture:anyMac": [
+	//      "node:os == 'macos'",
+	//      "node:tsReleaseTrack == 'stable'",
+	//  ],
+	// },
+
+	// Define users and devices that can use Tailscale SSH.
+	"ssh": [
+		// Allow all users to SSH into their own devices in check mode.
+		// Comment this section out if you want to define specific restrictions.
+		{
+			"action": "check",
+			"src":    ["autogroup:member"],
+			"dst":    ["autogroup:self"],
+			"users":  ["alice"],
+		},
+		{
+			"src":    ["autogroup:member"],
+			"dst":    ["tag:server", "tag:burgas", "tag:omarchy"],
+			"users":  ["alice"],
+			"action": "check",
+		},
+		{
+			"src":    ["tag:omarchy"],
+			"dst":    ["tag:server", "tag:burgas"],
+			"users":  ["alice"],
+			"action": "accept",
+		},
+	],
+
+	"nodeAttrs": [
+		{
+			"target": ["*"],
+			"attr":   ["drive:share", "drive:access"],
+		},
+		{
+			"target": ["100.87.182.94"],
+			"attr":   ["funnel"],
+		},
+	],
+
+	"grants": [
+		{
+			"src": ["*"],
+			"dst": ["*"],
+
+			"app": {
+				"tailscale.com/cap/drive": [
+					{
+						"shares": ["*"],
+						"access": "rw",
+					},
+				],
+			},
+		},
+	],
+
+	"tagOwners": {
+		"tag:server": [
+			"hbakardzhiev@github",
+			"autogroup:owner",
+			"autogroup:admin",
+			"autogroup:billing-admin",
+		],
+
+		"tag:burgas": [
+			"hbakardzhiev@github",
+			"autogroup:owner",
+			"autogroup:admin",
+			"autogroup:billing-admin",
+		],
+
+		"tag:omarchy": [
+			"hbakardzhiev@github",
+			"autogroup:owner",
+			"autogroup:admin",
+			"autogroup:billing-admin",
+		],
+
+		"tag:phone": [
+			"hbakardzhiev@github",
+			"autogroup:owner",
+			"autogroup:admin",
+			"autogroup:billing-admin",
+		],
+	},
+
+	"sshTests": [
+		{
+			"src":    "tag:omarchy",
+			"dst":    ["tag:server", "tag:burgas"],
+			"accept": ["alice"],
+			"deny":   ["root"],
+		},
+		{
+			"src":  "tag:phone",
+			"dst":  ["tag:server", "tag:burgas"],
+			"deny": ["alice", "root"],
+		},
+		{
+			"src":   "mama-pc",
+			"dst":   ["tag:server"],
+			"check": ["alice"],
+			"deny":  ["root"],
+		},
+	],
+
+	// Test access rules every time they're saved.
+	// "tests": [
+	//    {
+	//        "src": "alice@example.com",
+	//        "accept": ["tag:example"],
+	//        "deny": ["100.101.102.103:443"],
+	//    },
+	// ],
+}
